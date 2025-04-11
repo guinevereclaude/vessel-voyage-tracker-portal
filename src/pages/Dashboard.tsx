@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -246,7 +245,7 @@ const Dashboard = () => {
                     </div>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All statuses</SelectItem>
+                    <SelectItem value="all">All statuses</SelectItem>
                     <SelectItem value="in-transit">In Transit</SelectItem>
                     <SelectItem value="docked">Docked</SelectItem>
                     <SelectItem value="delayed">Delayed</SelectItem>
