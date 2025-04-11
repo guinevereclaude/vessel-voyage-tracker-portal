@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -25,7 +26,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -69,7 +70,7 @@ const Dashboard = () => {
       destination: destination,
       eta: etaDateTime.toISOString(),
       status: 'in-transit',
-      addedBy: user.username,
+      addedBy: profile?.username || user.email?.split('@')[0] || 'unknown',
       addedAt: new Date().toISOString(),
     };
     
@@ -255,7 +256,17 @@ const Dashboard = () => {
                 <Button 
                   variant="outline" 
                   size="icon"
-                  onClick={handleRefresh}
+                  onClick={() => {
+                    setIsRefreshing(true);
+                    // Simulate refresh delay
+                    setTimeout(() => {
+                      toast({
+                        title: "Data refreshed",
+                        description: "Vessel tracking data has been updated",
+                      });
+                      setIsRefreshing(false);
+                    }, 1500);
+                  }}
                   disabled={isRefreshing}
                 >
                   <RefreshCw className={cn("h-4 w-4", isRefreshing && "animate-spin")} />
