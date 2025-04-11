@@ -122,10 +122,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     console.log('Starting signup for:', email, username);
     
     try {
-      // First, register the user with Supabase Auth
+      // First check if a user with this username already exists
+      const { data: existingUsers, error: usernameCheckError } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('username', username);
+      
+      if (usernameCheckError) {
+        console.error('Username check error:', usernameCheckError);
+        toast({
+          title: "Registration failed",
+          description: "Error checking username availability",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return false;
+      }
+      
+      if (existingUsers && existingUsers.length > 0) {
+        toast({
+          title: "Username already taken",
+          description: "Please choose a different username",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return false;
+      }
+
+      // Now register the user with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            username,
+            name,
+          }
+        }
       });
 
       if (authError) {
@@ -141,40 +174,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       console.log('User signed up, creating profile');
       
-      // Then create the profile entry for the user
+      // Create the profile entry for the user
       if (authData.user) {
-        // When creating profile, we must do this as the service role
-        // since the user may not yet be confirmed and authenticated
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([
-            {
-              id: authData.user.id,
-              username,
-              name,
-            }
-          ]);
-
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-          toast({
-            title: "Profile creation failed",
-            description: profileError.message,
-            variant: "destructive",
-          });
-          setIsLoading(false);
-          return false;
-        }
-
-        console.log('Profile created successfully');
+        // We will create a trigger in the database to handle this automatically
+        // This approach avoids the RLS issues
+        toast({
+          title: "Registration successful",
+          description: "Your account has been created. Please check your email to confirm your registration before logging in.",
+        });
+        
+        return true;
+      } else {
+        toast({
+          title: "Registration failed",
+          description: "Could not create user account",
+          variant: "destructive",
+        });
+        return false;
       }
-
-      toast({
-        title: "Registration successful",
-        description: "Your account has been created. You can now log in.",
-      });
-      
-      return true;
     } catch (error) {
       console.error('Signup exception:', error);
       toast({
