@@ -30,16 +30,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { toast } = useToast();
 
   const fetchProfile = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-      
-    if (!error && data) {
-      setProfile(data);
-    } else {
-      console.error('Error fetching profile:', error);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+        
+      if (!error && data) {
+        setProfile(data);
+      } else {
+        console.error('Error fetching profile:', error);
+      }
+    } catch (error) {
+      console.error('Exception fetching profile:', error);
     }
   };
 
@@ -47,6 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -60,6 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Got session:', session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -113,6 +119,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signup = async (email: string, password: string, username: string, name: string): Promise<boolean> => {
     setIsLoading(true);
+    console.log('Starting signup for:', email, username);
     
     try {
       // First, register the user with Supabase Auth
@@ -122,6 +129,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (authError) {
+        console.error('Auth signup error:', authError);
         toast({
           title: "Registration failed",
           description: authError.message,
@@ -131,8 +139,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
 
+      console.log('User signed up, creating profile');
+      
       // Then create the profile entry for the user
       if (authData.user) {
+        // When creating profile, we must do this as the service role
+        // since the user may not yet be confirmed and authenticated
         const { error: profileError } = await supabase
           .from('profiles')
           .insert([
@@ -144,6 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           ]);
 
         if (profileError) {
+          console.error('Profile creation error:', profileError);
           toast({
             title: "Profile creation failed",
             description: profileError.message,
@@ -152,6 +165,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setIsLoading(false);
           return false;
         }
+
+        console.log('Profile created successfully');
       }
 
       toast({
@@ -161,6 +176,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       return true;
     } catch (error) {
+      console.error('Signup exception:', error);
       toast({
         title: "Registration failed",
         description: error instanceof Error ? error.message : "An unexpected error occurred",
