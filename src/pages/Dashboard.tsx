@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/DashboardLayout';
@@ -10,6 +9,8 @@ import VesselList from '@/components/vessel/VesselList';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { CheckCircle } from 'lucide-react';
 
 const Dashboard = () => {
   const { user, profile } = useAuth();
@@ -24,10 +25,18 @@ const Dashboard = () => {
     return null;
   }
 
-  // Fetch vessels from Supabase
+  // Fetch vessels from Supabase (only non-successful trips)
   const { data: vessels = [], isLoading } = useQuery({
     queryKey: ['vessels'],
     queryFn: async () => {
+      // Get successful trip IDs to filter them out
+      const { data: successfulTripIds } = await supabase
+        .from('successful_trips')
+        .select('trip_id');
+      
+      const excludeIds = successfulTripIds ? successfulTripIds.map(item => item.trip_id) : [];
+      
+      // Get all trips that are not in the successful_trips table
       const { data, error } = await supabase
         .from('all_trips')
         .select('*')
@@ -43,7 +52,12 @@ const Dashboard = () => {
         return [];
       }
       
-      return data.map(trip => ({
+      // Filter out successful trips
+      const activeTrips = excludeIds.length > 0 
+        ? data.filter(trip => !excludeIds.includes(trip.id))
+        : data;
+      
+      return activeTrips.map(trip => ({
         id: trip.id,
         name: trip.vessel_name,
         vesselId: trip.vessel_id,
@@ -173,6 +187,7 @@ const Dashboard = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vessels'] });
+      queryClient.invalidateQueries({ queryKey: ['successful-trips'] });
       toast({
         title: "Trip completed",
         description: "Vessel has been marked as successfully completed",
@@ -206,6 +221,18 @@ const Dashboard = () => {
 
   return (
     <DashboardLayout>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-maritime-900">Vessel Tracking</h1>
+        <Button 
+          variant="outline" 
+          className="flex items-center gap-2"
+          onClick={() => navigate('/successful-trips')}
+        >
+          <CheckCircle className="h-4 w-4 text-green-500" />
+          View Successful Voyages
+        </Button>
+      </div>
+      
       <div className="flex flex-col md:flex-row gap-6">
         {/* Add vessel form */}
         <div className={`w-full ${isMobile ? 'order-2' : 'md:w-1/3'}`}>

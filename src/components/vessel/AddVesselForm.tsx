@@ -108,8 +108,8 @@ const AddVesselForm: React.FC<AddVesselFormProps> = ({ onAddVessel, currentUser 
           
           <div className="space-y-2">
             <Label>Estimated Time of Arrival (ETA)</Label>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+              <div className="w-full sm:w-2/3">
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -129,15 +129,17 @@ const AddVesselForm: React.FC<AddVesselFormProps> = ({ onAddVessel, currentUser 
                       selected={etaDate}
                       onSelect={setEtaDate}
                       initialFocus
+                      className="pointer-events-auto"
                     />
                   </PopoverContent>
                 </Popover>
               </div>
-              <div>
+              <div className="w-full sm:w-1/3">
                 <Input
                   type="time"
                   value={etaTime}
                   onChange={(e) => setEtaTime(e.target.value)}
+                  className="w-full"
                 />
               </div>
             </div>

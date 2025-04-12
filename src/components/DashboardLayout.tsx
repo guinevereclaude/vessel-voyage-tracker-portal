@@ -2,7 +2,7 @@
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Ship, LogOut, User, PlusCircle, LifeBuoy, Settings, Menu } from 'lucide-react';
+import { Ship, LogOut, User, Settings, Menu, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -30,11 +30,17 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     navigate('/');
   };
 
+  const displayName = profile?.username || user?.email?.split('@')[0] || 'User';
+
   const Navigation = () => (
     <>
       <Link to="/dashboard" className="flex items-center space-x-2 py-2 px-3 rounded-md hover:bg-maritime-100 transition-colors">
         <Ship className="h-5 w-5 text-maritime-700" />
         <span className="font-medium text-maritime-800">Dashboard</span>
+      </Link>
+      <Link to="/successful-trips" className="flex items-center space-x-2 py-2 px-3 rounded-md hover:bg-maritime-100 transition-colors">
+        <CheckCircle className="h-5 w-5 text-maritime-700" />
+        <span className="font-medium text-maritime-800">Successful Voyages</span>
       </Link>
       <Link to="/settings" className="flex items-center space-x-2 py-2 px-3 rounded-md hover:bg-maritime-100 transition-colors">
         <Settings className="h-5 w-5 text-maritime-700" />
@@ -70,7 +76,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 <div className="py-4">
                   <div className="flex items-center space-x-2 mb-6">
                     <User className="h-5 w-5 text-maritime-700" />
-                    <span className="font-medium text-maritime-800">{profile?.name || user?.email}</span>
+                    <span className="font-medium text-maritime-800">{displayName}</span>
                   </div>
                   <Separator className="my-4" />
                   <div className="flex flex-col space-y-2">
@@ -85,7 +91,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="flex items-center space-x-2">
                     <User className="h-5 w-5 text-maritime-700" />
-                    <span className="font-medium text-maritime-800 max-w-[150px] truncate">{profile?.name || user?.email}</span>
+                    <span className="font-medium text-maritime-800 max-w-[150px] truncate">{displayName}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
@@ -98,14 +104,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
+                    <Link to="/successful-trips">
+                      <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
+                      <span>Successful Voyages</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link to="/settings">
                       <Settings className="mr-2 h-4 w-4" />
                       <span>Settings</span>
                     </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <LifeBuoy className="mr-2 h-4 w-4" />
-                    <span>Support</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
