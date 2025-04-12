@@ -149,7 +149,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
 
-      // Now register the user with Supabase Auth
+      // Now register the user with Supabase Auth with metadata for profile creation
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -172,12 +172,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
 
-      console.log('User signed up, creating profile');
+      console.log('User signed up successfully');
       
-      // Create the profile entry for the user
       if (authData.user) {
-        // We will create a trigger in the database to handle this automatically
-        // This approach avoids the RLS issues
         toast({
           title: "Registration successful",
           description: "Your account has been created. Please check your email to confirm your registration before logging in.",
