@@ -7,11 +7,13 @@ import { useToast } from '@/components/ui/use-toast';
 import { vessels as initialVessels, Vessel } from '@/lib/mockDb';
 import AddVesselForm from '@/components/vessel/AddVesselForm';
 import VesselList from '@/components/vessel/VesselList';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Dashboard = () => {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   
   const [vessels, setVessels] = useState<Vessel[]>(initialVessels);
 
@@ -38,9 +40,9 @@ const Dashboard = () => {
 
   return (
     <DashboardLayout>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column - Add vessel form */}
-        <div className="lg:col-span-1">
+      <div className="flex flex-col md:flex-row gap-6">
+        {/* Add vessel form */}
+        <div className={`w-full ${isMobile ? 'order-2' : 'md:w-1/3'}`}>
           <AddVesselForm 
             onAddVessel={handleAddVessel} 
             currentUser={{
@@ -50,8 +52,8 @@ const Dashboard = () => {
           />
         </div>
         
-        {/* Right column - Vessel list */}
-        <div className="lg:col-span-2">
+        {/* Vessel list */}
+        <div className={`w-full ${isMobile ? 'order-1' : 'md:w-2/3'}`}>
           <VesselList vessels={vessels} />
         </div>
       </div>

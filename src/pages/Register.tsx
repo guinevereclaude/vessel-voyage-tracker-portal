@@ -58,18 +58,18 @@ const Register = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-maritime-100 to-maritime-50 p-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 md:mb-8">
           <div className="flex justify-center mb-2">
-            <Ship className="h-12 w-12 text-maritime-700" />
+            <Ship className="h-10 w-10 md:h-12 md:w-12 text-maritime-700" />
           </div>
-          <h1 className="text-3xl font-bold text-maritime-900">Vessel Voyage Tracker</h1>
-          <p className="text-maritime-700 mt-2">Create your account to start tracking vessels</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-maritime-900">Vessel Voyage Tracker</h1>
+          <p className="text-sm md:text-base text-maritime-700 mt-2">Create your account to start tracking vessels</p>
         </div>
         
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle className="text-2xl text-center">Sign Up</CardTitle>
-            <CardDescription className="text-center">
+        <Card className="w-full shadow-lg">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-xl md:text-2xl text-center">Sign Up</CardTitle>
+            <CardDescription className="text-center text-sm md:text-base">
               Create a new account to get started
             </CardDescription>
           </CardHeader>

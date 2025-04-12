@@ -31,18 +31,18 @@ const Login = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-maritime-100 to-maritime-50 p-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 md:mb-8">
           <div className="flex justify-center mb-2">
-            <Ship className="h-12 w-12 text-maritime-700" />
+            <Ship className="h-10 w-10 md:h-12 md:w-12 text-maritime-700" />
           </div>
-          <h1 className="text-3xl font-bold text-maritime-900">Vessel Voyage Tracker</h1>
-          <p className="text-maritime-700 mt-2">Track vessels and their journeys across the seas</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-maritime-900">Vessel Voyage Tracker</h1>
+          <p className="text-sm md:text-base text-maritime-700 mt-2">Track vessels and their journeys across the seas</p>
         </div>
         
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle className="text-2xl text-center">Log in</CardTitle>
-            <CardDescription className="text-center">
+        <Card className="w-full shadow-lg">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-xl md:text-2xl text-center">Log in</CardTitle>
+            <CardDescription className="text-center text-sm md:text-base">
               Enter your credentials to access your account
             </CardDescription>
           </CardHeader>
@@ -57,6 +57,7 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  className="h-10"
                 />
               </div>
               <div className="space-y-2">
@@ -68,13 +69,14 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  className="h-10"
                 />
               </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4">
               <Button 
                 type="submit" 
-                className="w-full bg-maritime-600 hover:bg-maritime-700"
+                className="w-full bg-maritime-600 hover:bg-maritime-700 h-10"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (

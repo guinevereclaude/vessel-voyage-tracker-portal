@@ -12,6 +12,7 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Form,
   FormControl,
@@ -65,6 +66,7 @@ const Settings = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [darkMode, setDarkMode] = React.useState(false);
+  const isMobile = useIsMobile();
 
   // Password form
   const passwordForm = useForm<z.infer<typeof passwordSchema>>({
@@ -181,14 +183,14 @@ const Settings = () => {
 
   return (
     <DashboardLayout>
-      <div className="container max-w-4xl py-10">
-        <div className="mb-10">
-          <h1 className="text-3xl font-bold text-maritime-900">Settings</h1>
-          <p className="text-maritime-600 mt-2">Manage your account settings and preferences</p>
+      <div className="container max-w-4xl py-6 md:py-10">
+        <div className="mb-6 md:mb-10">
+          <h1 className="text-2xl md:text-3xl font-bold text-maritime-900">Settings</h1>
+          <p className="text-sm md:text-base text-maritime-600 mt-2">Manage your account settings and preferences</p>
         </div>
 
         <Tabs defaultValue="account" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8">
+          <TabsList className={`grid w-full mb-6 md:mb-8 ${isMobile ? 'grid-cols-1 gap-2' : 'grid-cols-3'}`}>
             <TabsTrigger value="account">Account</TabsTrigger>
             <TabsTrigger value="password">Password</TabsTrigger>
             <TabsTrigger value="preferences">Preferences</TabsTrigger>
@@ -197,30 +199,30 @@ const Settings = () => {
           <TabsContent value="account">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
+                <CardTitle className="flex items-center text-lg md:text-xl">
                   <User className="mr-2 h-5 w-5 text-maritime-600" />
                   Contact Information
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-sm md:text-base">
                   Update your personal details and contact information.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...contactForm}>
-                  <form onSubmit={contactForm.handleSubmit(onContactSubmit)} className="space-y-6">
+                  <form onSubmit={contactForm.handleSubmit(onContactSubmit)} className="space-y-4 md:space-y-6">
                     <FormField
                       control={contactForm.control}
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="flex items-center">
+                          <FormLabel className="flex items-center text-sm md:text-base">
                             <Mail className="mr-2 h-4 w-4 text-maritime-600" />
                             Email
                           </FormLabel>
                           <FormControl>
-                            <Input {...field} type="email" />
+                            <Input {...field} type="email" className="h-9 md:h-10" />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="text-xs md:text-sm" />
                         </FormItem>
                       )}
                     />
@@ -229,14 +231,14 @@ const Settings = () => {
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="flex items-center">
+                          <FormLabel className="flex items-center text-sm md:text-base">
                             <User className="mr-2 h-4 w-4 text-maritime-600" />
                             Full Name
                           </FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input {...field} className="h-9 md:h-10" />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="text-xs md:text-sm" />
                         </FormItem>
                       )}
                     />
@@ -245,18 +247,18 @@ const Settings = () => {
                       name="phone"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="flex items-center">
+                          <FormLabel className="flex items-center text-sm md:text-base">
                             <Phone className="mr-2 h-4 w-4 text-maritime-600" />
                             Phone Number (optional)
                           </FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input {...field} className="h-9 md:h-10" />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="text-xs md:text-sm" />
                         </FormItem>
                       )}
                     />
-                    <Button type="submit">Save Contact Information</Button>
+                    <Button type="submit" className="w-full md:w-auto">Save Contact Information</Button>
                   </form>
                 </Form>
               </CardContent>
@@ -266,27 +268,27 @@ const Settings = () => {
           <TabsContent value="password">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
+                <CardTitle className="flex items-center text-lg md:text-xl">
                   <Lock className="mr-2 h-5 w-5 text-maritime-600" />
                   Change Password
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-sm md:text-base">
                   Update your password to keep your account secure.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...passwordForm}>
-                  <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-6">
+                  <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4 md:space-y-6">
                     <FormField
                       control={passwordForm.control}
                       name="currentPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Current Password</FormLabel>
+                          <FormLabel className="text-sm md:text-base">Current Password</FormLabel>
                           <FormControl>
-                            <Input {...field} type="password" />
+                            <Input {...field} type="password" className="h-9 md:h-10" />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="text-xs md:text-sm" />
                         </FormItem>
                       )}
                     />
@@ -295,11 +297,11 @@ const Settings = () => {
                       name="newPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>New Password</FormLabel>
+                          <FormLabel className="text-sm md:text-base">New Password</FormLabel>
                           <FormControl>
-                            <Input {...field} type="password" />
+                            <Input {...field} type="password" className="h-9 md:h-10" />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="text-xs md:text-sm" />
                         </FormItem>
                       )}
                     />
@@ -308,15 +310,15 @@ const Settings = () => {
                       name="confirmPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Confirm New Password</FormLabel>
+                          <FormLabel className="text-sm md:text-base">Confirm New Password</FormLabel>
                           <FormControl>
-                            <Input {...field} type="password" />
+                            <Input {...field} type="password" className="h-9 md:h-10" />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="text-xs md:text-sm" />
                         </FormItem>
                       )}
                     />
-                    <Button type="submit">Update Password</Button>
+                    <Button type="submit" className="w-full md:w-auto">Update Password</Button>
                   </form>
                 </Form>
               </CardContent>
@@ -326,7 +328,7 @@ const Settings = () => {
           <TabsContent value="preferences">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
+                <CardTitle className="flex items-center text-lg md:text-xl">
                   {darkMode ? (
                     <Moon className="mr-2 h-5 w-5 text-maritime-600" />
                   ) : (
@@ -334,27 +336,27 @@ const Settings = () => {
                   )}
                   Appearance
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-sm md:text-base">
                   Customize how the application looks and feels.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between py-4">
                   <div className="flex items-center space-x-2">
-                    <Sun className="h-5 w-5 text-maritime-600" />
-                    <span>Light</span>
+                    <Sun className="h-4 w-4 md:h-5 md:w-5 text-maritime-600" />
+                    <span className="text-sm md:text-base">Light</span>
                   </div>
                   <Switch 
                     checked={darkMode} 
                     onCheckedChange={handleDarkModeToggle} 
                   />
                   <div className="flex items-center space-x-2">
-                    <Moon className="h-5 w-5 text-maritime-600" />
-                    <span>Dark</span>
+                    <Moon className="h-4 w-4 md:h-5 md:w-5 text-maritime-600" />
+                    <span className="text-sm md:text-base">Dark</span>
                   </div>
                 </div>
                 <Separator className="my-4" />
-                <p className="text-sm text-muted-foreground pt-2">
+                <p className="text-xs md:text-sm text-muted-foreground pt-2">
                   More appearance settings will be available in future updates.
                 </p>
               </CardContent>
