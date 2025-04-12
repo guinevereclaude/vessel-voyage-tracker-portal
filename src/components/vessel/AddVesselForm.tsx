@@ -51,7 +51,7 @@ const AddVesselForm: React.FC<AddVesselFormProps> = ({ onAddVessel, currentUser 
       vesselId: vesselId,
       destination: destination,
       eta: etaDateTime.toISOString(),
-      status: 'in-transit' as const,
+      status: 'in-transit', // This will be a string in the database
       addedBy: currentUser.username || currentUser.email?.split('@')[0] || 'unknown',
       addedAt: new Date().toISOString(),
     };

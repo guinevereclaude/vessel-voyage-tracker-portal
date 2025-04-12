@@ -13,7 +13,7 @@ export interface Vessel {
   vesselId: string;
   destination: string;
   eta: string;
-  status: 'in-transit' | 'docked' | 'delayed';
+  status: string; // Changed from strict union type to string to match Supabase data
   addedBy: string;
   addedAt: string;
 }

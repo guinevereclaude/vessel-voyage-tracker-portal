@@ -104,6 +104,89 @@ const Dashboard = () => {
     }
   });
 
+  // Update vessel status mutation
+  const updateVesselStatusMutation = useMutation({
+    mutationFn: async ({ vesselId, status }: { vesselId: string, status: string }) => {
+      const { data, error } = await supabase
+        .from('all_trips')
+        .update({ status })
+        .eq('id', vesselId)
+        .select('*')
+        .single();
+        
+      if (error) {
+        throw error;
+      }
+      
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vessels'] });
+      toast({
+        title: "Status updated",
+        description: "Vessel status has been updated successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to update status",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Mark vessel as successful trip mutation
+  const markSuccessfulMutation = useMutation({
+    mutationFn: async (vessel: Vessel) => {
+      if (!user) throw new Error('User must be logged in');
+      
+      // First, update the status to 'docked' if it's not already
+      if (vessel.status !== 'docked') {
+        await updateVesselStatusMutation.mutateAsync({ 
+          vesselId: vessel.id, 
+          status: 'docked' 
+        });
+      }
+      
+      // Then add it to the successful_trips table
+      const successfulTripData = {
+        trip_id: vessel.id,
+        vessel_id: vessel.vesselId,
+        vessel_name: vessel.name,
+        destination: vessel.destination,
+        arrival_time: new Date().toISOString(),
+        user_id: user.id
+      };
+      
+      const { data, error } = await supabase
+        .from('successful_trips')
+        .insert(successfulTripData)
+        .select('*')
+        .single();
+        
+      if (error) {
+        throw error;
+      }
+      
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vessels'] });
+      toast({
+        title: "Trip completed",
+        description: "Vessel has been marked as successfully completed",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to mark as successful",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
   const handleAddVessel = (newVesselData: Omit<Vessel, 'id'>) => {
     addVesselMutation.mutate(newVesselData);
     
@@ -111,6 +194,14 @@ const Dashboard = () => {
       title: "Vessel added",
       description: `${newVesselData.name} has been added to the tracking system`,
     });
+  };
+
+  const handleUpdateVesselStatus = (vesselId: string, status: string) => {
+    updateVesselStatusMutation.mutate({ vesselId, status });
+  };
+
+  const handleMarkSuccessful = (vessel: Vessel) => {
+    markSuccessfulMutation.mutate(vessel);
   };
 
   return (
@@ -132,14 +223,8 @@ const Dashboard = () => {
           <VesselList 
             vessels={vessels} 
             isLoading={isLoading}
-            onUpdateVessel={(vesselId, status) => {
-              // Will implement this later
-              console.log("Updating vessel status", vesselId, status);
-            }}
-            onMarkSuccessful={(vessel) => {
-              // Will implement this later
-              console.log("Marking vessel as successful", vessel);
-            }}
+            onUpdateVessel={handleUpdateVesselStatus}
+            onMarkSuccessful={handleMarkSuccessful}
           />
         </div>
       </div>
