@@ -9,6 +9,45 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      all_trips: {
+        Row: {
+          added_at: string
+          added_by: string
+          destination: string
+          eta: string
+          id: string
+          status: string
+          updated_at: string
+          user_id: string
+          vessel_id: string
+          vessel_name: string
+        }
+        Insert: {
+          added_at?: string
+          added_by: string
+          destination: string
+          eta: string
+          id?: string
+          status: string
+          updated_at?: string
+          user_id: string
+          vessel_id: string
+          vessel_name: string
+        }
+        Update: {
+          added_at?: string
+          added_by?: string
+          destination?: string
+          eta?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          vessel_id?: string
+          vessel_name?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -32,6 +71,50 @@ export type Database = {
           username?: string
         }
         Relationships: []
+      }
+      successful_trips: {
+        Row: {
+          arrival_time: string
+          completed_at: string
+          completion_notes: string | null
+          destination: string
+          id: string
+          trip_id: string
+          user_id: string
+          vessel_id: string
+          vessel_name: string
+        }
+        Insert: {
+          arrival_time: string
+          completed_at?: string
+          completion_notes?: string | null
+          destination: string
+          id?: string
+          trip_id: string
+          user_id: string
+          vessel_id: string
+          vessel_name: string
+        }
+        Update: {
+          arrival_time?: string
+          completed_at?: string
+          completion_notes?: string | null
+          destination?: string
+          id?: string
+          trip_id?: string
+          user_id?: string
+          vessel_id?: string
+          vessel_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "successful_trips_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "all_trips"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

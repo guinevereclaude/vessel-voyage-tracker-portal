@@ -1,40 +1,115 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useToast } from '@/components/ui/use-toast';
-import { vessels as initialVessels, Vessel } from '@/lib/mockDb';
+import { Vessel } from '@/lib/mockDb';
 import AddVesselForm from '@/components/vessel/AddVesselForm';
 import VesselList from '@/components/vessel/VesselList';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 const Dashboard = () => {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const queryClient = useQueryClient();
   
-  const [vessels, setVessels] = useState<Vessel[]>(initialVessels);
-
   // Redirect if not logged in
   if (!user) {
     navigate('/', { replace: true });
     return null;
   }
 
+  // Fetch vessels from Supabase
+  const { data: vessels = [], isLoading } = useQuery({
+    queryKey: ['vessels'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('all_trips')
+        .select('*')
+        .order('added_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching vessels:', error);
+        toast({
+          title: "Error fetching vessels",
+          description: error.message,
+          variant: "destructive",
+        });
+        return [];
+      }
+      
+      return data.map(trip => ({
+        id: trip.id,
+        name: trip.vessel_name,
+        vesselId: trip.vessel_id,
+        destination: trip.destination,
+        eta: trip.eta,
+        status: trip.status,
+        addedBy: trip.added_by,
+        addedAt: trip.added_at
+      }));
+    }
+  });
+
+  // Add vessel mutation
+  const addVesselMutation = useMutation({
+    mutationFn: async (newVesselData: Omit<Vessel, 'id'>) => {
+      if (!user) throw new Error('User must be logged in');
+      
+      const vesselData = {
+        vessel_id: newVesselData.vesselId,
+        vessel_name: newVesselData.name,
+        destination: newVesselData.destination,
+        eta: newVesselData.eta,
+        status: newVesselData.status,
+        added_by: newVesselData.addedBy,
+        user_id: user.id
+      };
+      
+      const { data, error } = await supabase
+        .from('all_trips')
+        .insert(vesselData)
+        .select('*')
+        .single();
+        
+      if (error) {
+        throw error;
+      }
+      
+      return {
+        id: data.id,
+        name: data.vessel_name,
+        vesselId: data.vessel_id,
+        destination: data.destination,
+        eta: data.eta,
+        status: data.status,
+        addedBy: data.added_by,
+        addedAt: data.added_at
+      };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vessels'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to add vessel",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
   const handleAddVessel = (newVesselData: Omit<Vessel, 'id'>) => {
-    // Create new vessel with ID
-    const newVessel: Vessel = {
-      id: `${vessels.length + 1}`,
-      ...newVesselData
-    };
-    
-    setVessels([newVessel, ...vessels]);
+    addVesselMutation.mutate(newVesselData);
     
     toast({
       title: "Vessel added",
-      description: `${newVessel.name} has been added to the tracking system`,
+      description: `${newVesselData.name} has been added to the tracking system`,
     });
   };
 
@@ -54,7 +129,18 @@ const Dashboard = () => {
         
         {/* Vessel list */}
         <div className={`w-full ${isMobile ? 'order-1' : 'md:w-2/3'}`}>
-          <VesselList vessels={vessels} />
+          <VesselList 
+            vessels={vessels} 
+            isLoading={isLoading}
+            onUpdateVessel={(vesselId, status) => {
+              // Will implement this later
+              console.log("Updating vessel status", vesselId, status);
+            }}
+            onMarkSuccessful={(vessel) => {
+              // Will implement this later
+              console.log("Marking vessel as successful", vessel);
+            }}
+          />
         </div>
       </div>
     </DashboardLayout>

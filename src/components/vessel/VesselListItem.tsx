@@ -1,15 +1,30 @@
 
 import React from 'react';
 import { format } from 'date-fns';
-import { Ship, MapPin, Clock } from 'lucide-react';
+import { Ship, MapPin, Clock, MoreVertical, Check, AlertTriangle, Ship as ShipIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Vessel } from '@/lib/mockDb';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 
 interface VesselListItemProps {
   vessel: Vessel;
+  onUpdateStatus?: (status: string) => void;
+  onMarkSuccessful?: () => void;
 }
 
-const VesselListItem: React.FC<VesselListItemProps> = ({ vessel }) => {
+const VesselListItem: React.FC<VesselListItemProps> = ({ 
+  vessel, 
+  onUpdateStatus,
+  onMarkSuccessful 
+}) => {
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
     return format(date, 'MMM d, yyyy h:mm a');
@@ -49,7 +64,50 @@ const VesselListItem: React.FC<VesselListItemProps> = ({ vessel }) => {
           </div>
         </div>
         <div className="flex flex-col items-end">
-          {getStatusBadge(vessel.status)}
+          <div className="flex items-center space-x-2">
+            {getStatusBadge(vessel.status)}
+            
+            {(onUpdateStatus || onMarkSuccessful) && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  
+                  {onUpdateStatus && (
+                    <>
+                      <DropdownMenuItem onClick={() => onUpdateStatus('in-transit')}>
+                        <ShipIcon className="mr-2 h-4 w-4 text-amber-500" />
+                        <span>Mark as In Transit</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onUpdateStatus('delayed')}>
+                        <AlertTriangle className="mr-2 h-4 w-4 text-red-500" />
+                        <span>Mark as Delayed</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onUpdateStatus('docked')}>
+                        <Check className="mr-2 h-4 w-4 text-green-500" />
+                        <span>Mark as Docked</span>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  
+                  {onMarkSuccessful && (
+                    <>
+                      {onUpdateStatus && <DropdownMenuSeparator />}
+                      <DropdownMenuItem onClick={onMarkSuccessful}>
+                        <Check className="mr-2 h-4 w-4 text-green-500" />
+                        <span>Mark Trip as Successful</span>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
           <span className="text-xs text-maritime-500 mt-2">
             Added {format(new Date(vessel.addedAt), 'MMM d, yyyy')}
           </span>
