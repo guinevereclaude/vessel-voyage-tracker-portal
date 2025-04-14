@@ -63,11 +63,11 @@ const SuccessfulTrips = () => {
 
   return (
     <DashboardLayout>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl font-bold text-maritime-900">Successful Voyages</h1>
         <Button 
           variant="outline" 
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 w-full sm:w-auto"
           onClick={() => navigate('/dashboard')}
         >
           <ArrowLeftIcon className="h-4 w-4" />

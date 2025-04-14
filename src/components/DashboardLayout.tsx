@@ -1,8 +1,8 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Ship, LogOut, User, Settings, Menu, CheckCircle } from 'lucide-react';
+import { Ship, LogOut, User, Settings, Menu, CheckCircle, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -15,6 +15,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from '@/hooks/use-mobile';
+import { supabase } from '@/integrations/supabase/client';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -24,13 +25,36 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const { user, profile, logout } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    // Check if current user is admin
+    const checkAdminStatus = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase.rpc('is_admin', { user_id: user.id });
+        
+        if (error) {
+          console.error('Error checking admin status:', error);
+          return;
+        }
+        
+        setIsAdmin(data || false);
+      } catch (err) {
+        console.error('Exception checking admin status:', err);
+      }
+    };
+    
+    checkAdminStatus();
+  }, [user]);
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
 
-  const displayName = profile?.username || user?.email?.split('@')[0] || 'User';
+  const displayName = profile?.username || 'User';
 
   const Navigation = () => (
     <>
@@ -46,6 +70,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <Settings className="h-5 w-5 text-maritime-700" />
         <span className="font-medium text-maritime-800">Settings</span>
       </Link>
+      {isAdmin && (
+        <Link to="/admin" className="flex items-center space-x-2 py-2 px-3 rounded-md hover:bg-maritime-100 transition-colors">
+          <Shield className="h-5 w-5 text-maritime-700" />
+          <span className="font-medium text-maritime-800">Admin Panel</span>
+        </Link>
+      )}
       <div className="flex items-center space-x-2 py-2 px-3 rounded-md hover:bg-maritime-100 transition-colors cursor-pointer" onClick={handleLogout}>
         <LogOut className="h-5 w-5 text-maritime-700" />
         <span className="font-medium text-maritime-800">Log out</span>
@@ -91,7 +121,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="flex items-center space-x-2">
                     <User className="h-5 w-5 text-maritime-700" />
-                    <span className="font-medium text-maritime-800 max-w-[150px] truncate">{displayName}</span>
+                    <span className="font-medium text-maritime-800">{displayName}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
@@ -115,6 +145,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                       <span>Settings</span>
                     </Link>
                   </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin">
+                        <Shield className="mr-2 h-4 w-4 text-blue-500" />
+                        <span>Admin Panel</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />

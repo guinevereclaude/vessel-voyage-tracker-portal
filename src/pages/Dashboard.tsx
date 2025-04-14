@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,7 +11,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Shield } from 'lucide-react';
 
 const Dashboard = () => {
   const { user, profile } = useAuth();
@@ -18,12 +19,35 @@ const Dashboard = () => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const queryClient = useQueryClient();
+  const [isAdmin, setIsAdmin] = React.useState(false);
   
   // Redirect if not logged in
   if (!user) {
     navigate('/', { replace: true });
     return null;
   }
+
+  // Check if user is admin
+  React.useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase.rpc('is_admin', { user_id: user.id });
+        
+        if (error) {
+          console.error('Error checking admin status:', error);
+          return;
+        }
+        
+        setIsAdmin(data || false);
+      } catch (err) {
+        console.error('Exception checking admin status:', err);
+      }
+    };
+    
+    checkAdminStatus();
+  }, [user]);
 
   // Fetch vessels from Supabase (only non-successful trips)
   const { data: vessels = [], isLoading } = useQuery({
@@ -221,16 +245,29 @@ const Dashboard = () => {
 
   return (
     <DashboardLayout>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl font-bold text-maritime-900">Vessel Tracking</h1>
-        <Button 
-          variant="outline" 
-          className="flex items-center gap-2"
-          onClick={() => navigate('/successful-trips')}
-        >
-          <CheckCircle className="h-4 w-4 text-green-500" />
-          View Successful Voyages
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-2 w-full sm:w-auto"
+            onClick={() => navigate('/successful-trips')}
+          >
+            <CheckCircle className="h-4 w-4 text-green-500" />
+            View Successful Voyages
+          </Button>
+          
+          {isAdmin && (
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-2 w-full sm:w-auto"
+              onClick={() => navigate('/admin')}
+            >
+              <Shield className="h-4 w-4 text-blue-500" />
+              Admin Panel
+            </Button>
+          )}
+        </div>
       </div>
       
       <div className="flex flex-col md:flex-row gap-6">
