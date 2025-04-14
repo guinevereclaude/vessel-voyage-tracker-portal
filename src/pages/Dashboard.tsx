@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -21,13 +20,11 @@ const Dashboard = () => {
   const queryClient = useQueryClient();
   const [isAdmin, setIsAdmin] = React.useState(false);
   
-  // Redirect if not logged in
   if (!user) {
     navigate('/', { replace: true });
     return null;
   }
 
-  // Check if user is admin
   React.useEffect(() => {
     const checkAdminStatus = async () => {
       if (!user) return;
@@ -49,18 +46,15 @@ const Dashboard = () => {
     checkAdminStatus();
   }, [user]);
 
-  // Fetch vessels from Supabase (only non-successful trips)
   const { data: vessels = [], isLoading } = useQuery({
     queryKey: ['vessels'],
     queryFn: async () => {
-      // Get successful trip IDs to filter them out
       const { data: successfulTripIds } = await supabase
         .from('successful_trips')
         .select('trip_id');
       
       const excludeIds = successfulTripIds ? successfulTripIds.map(item => item.trip_id) : [];
       
-      // Get all trips that are not in the successful_trips table
       const { data, error } = await supabase
         .from('all_trips')
         .select('*')
@@ -76,7 +70,6 @@ const Dashboard = () => {
         return [];
       }
       
-      // Filter out successful trips
       const activeTrips = excludeIds.length > 0 
         ? data.filter(trip => !excludeIds.includes(trip.id))
         : data;
@@ -94,7 +87,6 @@ const Dashboard = () => {
     }
   });
 
-  // Add vessel mutation
   const addVesselMutation = useMutation({
     mutationFn: async (newVesselData: Omit<Vessel, 'id'>) => {
       if (!user) throw new Error('User must be logged in');
@@ -142,7 +134,6 @@ const Dashboard = () => {
     }
   });
 
-  // Update vessel status mutation
   const updateVesselStatusMutation = useMutation({
     mutationFn: async ({ vesselId, status }: { vesselId: string, status: string }) => {
       const { data, error } = await supabase
@@ -174,12 +165,10 @@ const Dashboard = () => {
     }
   });
 
-  // Mark vessel as successful trip mutation
   const markSuccessfulMutation = useMutation({
     mutationFn: async (vessel: Vessel) => {
       if (!user) throw new Error('User must be logged in');
       
-      // First, update the status to 'docked' if it's not already
       if (vessel.status !== 'docked') {
         await updateVesselStatusMutation.mutateAsync({ 
           vesselId: vessel.id, 
@@ -187,7 +176,6 @@ const Dashboard = () => {
         });
       }
       
-      // Then add it to the successful_trips table
       const successfulTripData = {
         trip_id: vessel.id,
         vessel_id: vessel.vesselId,
@@ -270,9 +258,8 @@ const Dashboard = () => {
         </div>
       </div>
       
-      <div className="flex flex-col md:flex-row gap-6">
-        {/* Add vessel form */}
-        <div className={`w-full ${isMobile ? 'order-2' : 'md:w-1/3'}`}>
+      <div className="flex flex-col lg:flex-row gap-6">
+        <div className={`w-full ${isMobile ? 'order-2' : 'lg:w-1/3'}`}>
           <AddVesselForm 
             onAddVessel={handleAddVessel} 
             currentUser={{
@@ -282,8 +269,7 @@ const Dashboard = () => {
           />
         </div>
         
-        {/* Vessel list */}
-        <div className={`w-full ${isMobile ? 'order-1' : 'md:w-2/3'}`}>
+        <div className={`w-full ${isMobile ? 'order-1' : 'lg:w-2/3'}`}>
           <VesselList 
             vessels={vessels} 
             isLoading={isLoading}
