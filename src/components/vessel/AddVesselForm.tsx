@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
@@ -32,15 +31,15 @@ const AddVesselForm: React.FC<AddVesselFormProps> = ({ onAddVessel, currentUser 
   const [etaTime, setEtaTime] = useState('12:00');
   const [previousVessels, setPreviousVessels] = useState<string[]>([]);
   const [showVesselSuggestions, setShowVesselSuggestions] = useState(false);
+  const [vesselIdSuggestions, setVesselIdSuggestions] = useState<{name: string, id: string}[]>([]);
   const { toast } = useToast();
 
-  // Fetch previous vessel names
   useEffect(() => {
     const fetchPreviousVessels = async () => {
       try {
         const { data, error } = await supabase
           .from('all_trips')
-          .select('vessel_name')
+          .select('vessel_name, vessel_id')
           .order('added_at', { ascending: false });
         
         if (error) {
@@ -48,12 +47,12 @@ const AddVesselForm: React.FC<AddVesselFormProps> = ({ onAddVessel, currentUser 
           return;
         }
         
-        // Extract unique vessel names
-        const uniqueVesselNames = Array.from(new Set(
-          data.map(vessel => vessel.vessel_name)
-        ));
+        const uniqueVessels = Array.from(new Set(
+          data.map(vessel => JSON.stringify({ name: vessel.vessel_name, id: vessel.vessel_id }))
+        )).map(str => JSON.parse(str));
         
-        setPreviousVessels(uniqueVesselNames);
+        setPreviousVessels(uniqueVessels.map(v => v.name));
+        setVesselIdSuggestions(uniqueVessels);
       } catch (err) {
         console.error('Error fetching vessel data:', err);
       }
@@ -74,25 +73,22 @@ const AddVesselForm: React.FC<AddVesselFormProps> = ({ onAddVessel, currentUser 
       return;
     }
     
-    // Format the ETA datetime
     const etaDateTime = new Date(etaDate);
     const [hours, minutes] = etaTime.split(':').map(Number);
     etaDateTime.setHours(hours, minutes);
     
-    // Create new vessel
     const newVessel = {
       name: vesselName,
       vesselId: vesselId,
       destination: destination,
       eta: etaDateTime.toISOString(),
-      status: 'in-transit', // This will be a string in the database
+      status: 'in-transit',
       addedBy: currentUser.username || currentUser.email?.split('@')[0] || 'unknown',
       addedAt: new Date().toISOString(),
     };
     
     onAddVessel(newVessel);
     
-    // Reset form
     setVesselName('');
     setVesselId('');
     setDestination('');
@@ -103,6 +99,15 @@ const AddVesselForm: React.FC<AddVesselFormProps> = ({ onAddVessel, currentUser 
   const filteredVesselSuggestions = previousVessels.filter(
     name => name.toLowerCase().includes(vesselName.toLowerCase())
   ).slice(0, 5);
+
+  const handleVesselNameSelect = (name: string) => {
+    setVesselName(name);
+    const matchingVessel = vesselIdSuggestions.find(v => v.name === name);
+    if (matchingVessel) {
+      setVesselId(matchingVessel.id);
+    }
+    setShowVesselSuggestions(false);
+  };
 
   return (
     <Card>
@@ -120,22 +125,22 @@ const AddVesselForm: React.FC<AddVesselFormProps> = ({ onAddVessel, currentUser 
               <Input
                 id="vesselName"
                 value={vesselName}
-                onChange={(e) => setVesselName(e.target.value)}
+                onChange={(e) => {
+                  setVesselName(e.target.value);
+                  if (vesselId) setVesselId('');
+                }}
                 onFocus={() => setShowVesselSuggestions(true)}
                 placeholder="Enter vessel name"
                 autoComplete="off"
               />
               {showVesselSuggestions && vesselName && filteredVesselSuggestions.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg">
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-maritime-800 border rounded-md shadow-lg">
                   <ul className="py-1 max-h-60 overflow-auto">
                     {filteredVesselSuggestions.map((name, index) => (
                       <li
                         key={index}
                         className="px-4 py-2 hover:bg-muted cursor-pointer text-left"
-                        onClick={() => {
-                          setVesselName(name);
-                          setShowVesselSuggestions(false);
-                        }}
+                        onClick={() => handleVesselNameSelect(name)}
                       >
                         {name}
                       </li>

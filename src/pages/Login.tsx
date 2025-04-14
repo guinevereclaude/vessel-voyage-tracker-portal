@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import Clock from '@/components/Clock';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -14,7 +15,6 @@ const Login = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login, user, isLoading } = useAuth();
   
-  // If user is already logged in, redirect to dashboard
   if (!isLoading && user) {
     return <Navigate to="/dashboard" replace />;
   }
@@ -29,17 +29,21 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-maritime-100 to-maritime-50 p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-maritime-100 to-maritime-50 p-4 dark:from-maritime-900 dark:to-maritime-800">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+      
       <div className="w-full max-w-md">
-        <div className="text-center mb-6 md:mb-8">
+        <div className="text-center mb-6">
           <div className="flex justify-center mb-2">
-            <Ship className="h-10 w-10 md:h-12 md:w-12 text-maritime-700" />
+            <Ship className="h-12 w-12 text-maritime-700 dark:text-maritime-400" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-maritime-900">Vessel Voyage Tracker</h1>
-          <p className="text-sm md:text-base text-maritime-700 mt-2">Track vessels and their journeys across the seas</p>
+          <h1 className="text-2xl font-bold text-maritime-900 dark:text-maritime-50">Vessel Voyage Tracker</h1>
+          <Clock />
         </div>
         
-        <Card className="w-full shadow-lg">
+        <Card className="w-full shadow-lg dark:bg-maritime-800/50">
           <CardHeader className="space-y-1">
             <CardTitle className="text-xl md:text-2xl text-center">Log in</CardTitle>
             <CardDescription className="text-center text-sm md:text-base">
@@ -76,7 +80,7 @@ const Login = () => {
             <CardFooter className="flex flex-col space-y-4">
               <Button 
                 type="submit" 
-                className="w-full bg-maritime-600 hover:bg-maritime-700 h-10"
+                className="w-full"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
@@ -88,9 +92,16 @@ const Login = () => {
                   'Log in'
                 )}
               </Button>
-              <p className="text-sm text-center text-maritime-600">
-                Don't have an account? <Link to="/register" className="text-maritime-800 font-medium hover:underline">Sign up</Link>
-              </p>
+              <div className="text-sm text-center space-y-2">
+                <p>
+                  <Link to="/reset-password" className="text-maritime-600 dark:text-maritime-400 hover:underline">
+                    Forgot your password?
+                  </Link>
+                </p>
+                <p className="text-maritime-600 dark:text-maritime-400">
+                  Don't have an account? <Link to="/register" className="text-maritime-800 dark:text-maritime-300 font-medium hover:underline">Sign up</Link>
+                </p>
+              </div>
             </CardFooter>
           </form>
         </Card>
