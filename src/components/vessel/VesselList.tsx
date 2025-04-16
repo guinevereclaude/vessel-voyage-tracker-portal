@@ -43,36 +43,39 @@ const VesselList: React.FC<VesselListProps> = ({
     : vessels;
 
   return (
-    <div className="bg-white rounded-lg border border-maritime-200 overflow-hidden">
-      <div className="p-4 border-b border-maritime-200 flex justify-between items-center">
-        <h2 className="text-lg font-semibold text-maritime-800">Tracked Vessels</h2>
-        <div className="flex space-x-2">
-          <Select
-            value={statusFilter}
-            onValueChange={(value) => setStatusFilter(value || undefined)}
-          >
-            <SelectTrigger className="w-[180px]">
-              <div className="flex items-center">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Filter by status" />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              <SelectItem value="in-transit">In Transit</SelectItem>
-              <SelectItem value="docked">Docked</SelectItem>
-              <SelectItem value="delayed">Delayed</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          <Button 
-            variant="outline" 
-            size="icon"
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-          >
-            <RefreshCw className={cn("h-4 w-4", isRefreshing && "animate-spin")} />
-          </Button>
+    <div className="bg-white rounded-lg border border-maritime-200 overflow-hidden dark:bg-maritime-800 dark:border-maritime-700">
+      <div className="p-4 border-b border-maritime-200 dark:border-maritime-700">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <h2 className="text-lg font-semibold text-maritime-800 dark:text-maritime-100">Tracked Vessels</h2>
+          <div className="flex flex-wrap gap-2">
+            <Select
+              value={statusFilter}
+              onValueChange={(value) => setStatusFilter(value || undefined)}
+            >
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <div className="flex items-center">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Filter by status" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All statuses</SelectItem>
+                <SelectItem value="in-transit">In Transit</SelectItem>
+                <SelectItem value="docked">Docked</SelectItem>
+                <SelectItem value="delayed">Delayed</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="flex-shrink-0"
+            >
+              <RefreshCw className={cn("h-4 w-4", isRefreshing && "animate-spin")} />
+            </Button>
+          </div>
         </div>
       </div>
       

@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Shield } from 'lucide-react';
+import Clock from '@/components/Clock';
 
 const Dashboard = () => {
   const { user, profile } = useAuth();
@@ -74,16 +75,18 @@ const Dashboard = () => {
         ? data.filter(trip => !excludeIds.includes(trip.id))
         : data;
       
-      return activeTrips.map(trip => ({
-        id: trip.id,
-        name: trip.vessel_name,
-        vesselId: trip.vessel_id,
-        destination: trip.destination,
-        eta: trip.eta,
-        status: trip.status,
-        addedBy: trip.added_by,
-        addedAt: trip.added_at
-      }));
+      return activeTrips
+        .sort((a, b) => new Date(b.added_at).getTime() - new Date(a.added_at).getTime())
+        .map(trip => ({
+          id: trip.id,
+          name: trip.vessel_name,
+          vesselId: trip.vessel_id,
+          destination: trip.destination,
+          eta: trip.eta,
+          status: trip.status,
+          addedBy: trip.added_by,
+          addedAt: trip.added_at
+        }));
     }
   });
 
@@ -234,25 +237,31 @@ const Dashboard = () => {
   return (
     <DashboardLayout>
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-2xl font-bold text-maritime-900">Vessel Tracking</h1>
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+        <div className="space-y-2">
+          <h1 className="text-2xl font-bold text-maritime-900">Vessel Tracking</h1>
+          <div className="flex items-center gap-2 text-maritime-600">
+            <span>Welcome, {profile?.username || 'User'}</span>
+            <Clock />
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           <Button 
             variant="outline" 
-            className="flex items-center gap-2 w-full sm:w-auto"
+            className="flex items-center gap-2 flex-1 sm:flex-none justify-center"
             onClick={() => navigate('/successful-trips')}
           >
             <CheckCircle className="h-4 w-4 text-green-500" />
-            View Successful Voyages
+            <span className="whitespace-nowrap">View Successful Voyages</span>
           </Button>
           
           {isAdmin && (
             <Button 
               variant="outline" 
-              className="flex items-center gap-2 w-full sm:w-auto"
+              className="flex items-center gap-2 flex-1 sm:flex-none justify-center"
               onClick={() => navigate('/admin')}
             >
               <Shield className="h-4 w-4 text-blue-500" />
-              Admin Panel
+              <span className="whitespace-nowrap">Admin Panel</span>
             </Button>
           )}
         </div>
