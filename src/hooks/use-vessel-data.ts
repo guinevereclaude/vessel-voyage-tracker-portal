@@ -53,6 +53,14 @@ export const useVesselData = () => {
 
   const addVesselMutation = useMutation({
     mutationFn: async (newVesselData: Omit<Vessel, 'id'>) => {
+      // Fix 1: Get the user ID first, then use it in the vessel data
+      const { data: { user } } = await supabase.auth.getUser();
+      const userId = user?.id;
+      
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+      
       const vesselData = {
         vessel_id: newVesselData.vesselId,
         vessel_name: newVesselData.name,
@@ -60,7 +68,7 @@ export const useVesselData = () => {
         eta: newVesselData.eta,
         status: newVesselData.status,
         added_by: newVesselData.addedBy,
-        user_id: supabase.auth.getUser().then(response => response.data.user?.id)
+        user_id: userId // Now this is a string, not a Promise
       };
       
       const { data, error } = await supabase
@@ -136,13 +144,20 @@ export const useVesselData = () => {
         });
       }
       
+      const { data: { user } } = await supabase.auth.getUser();
+      const userId = user?.id;
+      
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+      
       const successfulTripData = {
         trip_id: vessel.id,
         vessel_id: vessel.vesselId,
         vessel_name: vessel.name,
         destination: vessel.destination,
         arrival_time: new Date().toISOString(),
-        user_id: (await supabase.auth.getUser()).data.user?.id
+        user_id: userId
       };
       
       const { data, error } = await supabase
@@ -174,11 +189,16 @@ export const useVesselData = () => {
     }
   });
 
+  // Fix 2: Add wrapper functions with the correct parameter signatures
+  const updateVesselStatus = (vesselId: string, status: string) => {
+    updateVesselStatusMutation.mutate({ vesselId, status });
+  };
+
   return {
     vessels,
     isLoading,
     addVessel: addVesselMutation.mutate,
-    updateVesselStatus: updateVesselStatusMutation.mutate,
+    updateVesselStatus, // Use the wrapper function
     markSuccessful: markSuccessfulMutation.mutate
   };
 };
